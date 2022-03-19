@@ -28,7 +28,7 @@ def getData():
         'skl-ticket': str(uuid.uuid1()),
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
         # 自己的token
-        'X-Auth-Token': '18e6bb74-ce3a-46d2-aa29-9ccc1aef12b9'
+        'X-Auth-Token': 'xxxxxxx-xxxxx-xxxxx-xxxx-xxxxxxxxxxxx'#自己的token，从浏览器请求头里复制来
     }
     response = requests.get(getUrl, headers=getHeaders)
     return json.loads(response.text)
@@ -51,7 +51,7 @@ def postData(answer):
         'Sec-Fetch-Site': 'cross-site',
         'skl-ticket': str(uuid.uuid1()),
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
-        'X-Auth-Token': '18e6bb74-ce3a-46d2-aa29-9ccc1aef12b9'
+        'X-Auth-Token': 'xxxxxxx-xxxxx-xxxxx-xxxx-xxxxxxxxxxxx'#自己的token，从浏览器请求头里复制来
     }
     requests.post(url, headers=postHeaders, data=answer)
 
