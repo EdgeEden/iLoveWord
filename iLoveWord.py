@@ -10,7 +10,7 @@ def translate(word):
 def getData():
     # 获取当前时间戳
     timestamp = int(time.time() * 10000)
-    getUrl = 'https://skl.hdu.edu.cn/api/paper/new?type=0&week=4&startTime=' + str(timestamp)
+    getUrl = 'https://skl.hdu.edu.cn/api/paper/new?type=0&week=4&startTime=' + str(timestamp) # 这里参数type中0为自测,1为考试。week参数为第几周。
     getHeaders = {
         'Accept': 'application/json, text/plain, */*',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -69,13 +69,13 @@ def getAnswer(word):
         if word['title'] in transResult:
             return option
 
-        if '，' in word['title']:
+        if '，' in word['title']:# 处理中文中的  （，）
             zhList = word['title'].split('，')
             if zhList[1] in transResult:
                 return option
             elif zhList[0] in transResult:
                 return option
-        elif '...' in word['title']:
+        elif '......' in word['title']: #处理   (......)
             zhList = word['title'].split('...')
             if zhList[1] in transResult:
                 return option
