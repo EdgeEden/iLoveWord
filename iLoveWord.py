@@ -1,16 +1,23 @@
+import random
 import requests
 import uuid
 import json
 import time
+from yiban import YiBan
+
 
 def translate(word):
     url = 'https://fanyi.baidu.com/sug'
     data = {'kw': word}
     return str(json.loads(requests.post(url, data=data).text))
-def getData():
+
+
+def getData(x_token, mode=0, week=4):
     # 获取当前时间戳
     timestamp = int(time.time() * 10000)
-    getUrl = 'https://skl.hdu.edu.cn/api/paper/new?type=0&week=4&startTime=' + str(timestamp) # 这里参数type中0为自测,1为考试。week参数为第几周。
+    getUrl = f'https://skl.hdu.edu.cn/api/paper/new?type={mode}&week={week}&startTime='.format(mode=mode,
+                                                                                               week=week) + str(
+        timestamp)  # 这里参数type中0为自测,1为考试。week参数为第几周。
     getHeaders = {
         'Accept': 'application/json, text/plain, */*',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -28,13 +35,13 @@ def getData():
         'skl-ticket': str(uuid.uuid1()),
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
         # 自己的token
-        'X-Auth-Token': 'xxxxxxx-xxxxx-xxxxx-xxxx-xxxxxxxxxxxx'#自己的token，从浏览器请求头里复制来
+        'X-Auth-Token': x_token
     }
     response = requests.get(getUrl, headers=getHeaders)
     return json.loads(response.text)
 
 
-def postData(answer):
+def postData(answer, x_token):
     url = 'https://skl.hdu.edu.cn/api/paper/save'
 
     postHeaders = {
@@ -51,16 +58,15 @@ def postData(answer):
         'Sec-Fetch-Site': 'cross-site',
         'skl-ticket': str(uuid.uuid1()),
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
-        'X-Auth-Token': 'xxxxxxx-xxxxx-xxxxx-xxxx-xxxxxxxxxxxx'#自己的token，从浏览器请求头里复制来
+        'X-Auth-Token': x_token
     }
     requests.post(url, headers=postHeaders, data=answer)
 
 
 def getAnswer(word):
-
     optionList = ['A', 'B', 'C', 'D']
     transResult = translate(word['title'])
-    #print(transResult)
+    # print(transResult)
     for option in optionList:
         if word[f'answer{option}'] in transResult:
             return option
@@ -69,30 +75,36 @@ def getAnswer(word):
         if word['title'] in transResult:
             return option
 
-        if '，' in word['title']:# 处理中文中的  （，）
+        if '，' in word['title']:  # 处理中文中的  （，）
             zhList = word['title'].split('，')
             if zhList[1] in transResult:
                 return option
             elif zhList[0] in transResult:
                 return option
-        elif '......' in word['title']: #处理   (......)
+        elif '......' in word['title']:  # 处理   (......)
             zhList = word['title'].split('...')
             if zhList[1] in transResult:
                 return option
             elif zhList[0] in transResult:
                 return option
     return 'C'
+
+
 if __name__ == '__main__':
+    yb = YiBan("YOUR_NAME", "YOUR_PWD")  # FIXME:账号密码
+    login = yb.login()
+    X_Auth_Token = yb.auth()
     with open('answerList', 'r') as f:
         answerSource = f.read()
     answerDic = json.loads(answerSource)
-    paper = getData()
+    paper = getData(X_Auth_Token, mode=0, week=4)  # FIXME:mode=0为自测,1为考试。week参数为第几周。
     print(paper)
     answerDic['paperId'] = paper['paperId']
-    print('********正在答题中.........')
+    print('********正在答题中********')
     for index in range(0, 100):
         answerDic['list'][index]['input'] = getAnswer(paper['list'][index])
         answerDic['list'][index]['paperDetailId'] = paper['list'][index]['paperDetailId']
-    #time.sleep(60 * 5)
-    postData(json.dumps(answerDic))
-    print('答题以结束')
+    # 随机延时4-6分钟
+    time.sleep(random.randint(240, 360))  # 测试时可关闭,正式使用时请打开
+    postData(json.dumps(answerDic), X_Auth_Token)
+    print('答题已结束')
