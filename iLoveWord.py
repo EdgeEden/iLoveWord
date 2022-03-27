@@ -82,7 +82,7 @@ def getAnswer(word):
             elif zhList[0] in transResult:
                 return option
         elif '......' in word['title']:  # 处理   (......)
-            zhList = word['title'].split('...')
+            zhList = word['title'].split('......')
             if zhList[1] in transResult:
                 return option
             elif zhList[0] in transResult:
