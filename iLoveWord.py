@@ -15,8 +15,7 @@ def translate(word):
 def getData(x_token, mode=0, week=4):
     # 获取当前时间戳
     timestamp = int(time.time() * 10000)
-    getUrl = f'https://skl.hdu.edu.cn/api/paper/new?type={mode}&week={week}&startTime='.format(mode=mode,
-                                                                                               week=week) + str(
+    getUrl = f'https://skl.hdu.edu.cn/api/paper/new?type={mode}&week={week}&startTime='+ str(
         timestamp)  # 这里参数type中0为自测,1为考试。week参数为第几周。
     getHeaders = {
         'Accept': 'application/json, text/plain, */*',
