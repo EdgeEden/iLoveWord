@@ -2,14 +2,9 @@ import requests
 import re
 import execjs
 
-
-
-#经检测在login.js的文件里面
-#有个cookie时直接写在请求头里面的
-#val和strEnc两个函数都不属于login.js文件，属于外界文件
 session = requests.session()
 class extra:
-    #这里写几条正则，调用的时候使用extra.变量名
+    
     def working1(self,account,password):
         with open('./login.js','r',encoding='utf-8') as p:
             jscode = p.read()
@@ -28,30 +23,23 @@ class extra:
             'Cache-Control': 'max-age=0',
         }
         url1 = 'https://cas.hdu.edu.cn/cas/login?state=&service=https://skl.hdu.edu.cn/api/cas/login?state=&index='
-        #我真服了，火狐里面给的set-cookie的信息是不完整的，有时候的消息会不完整，以后建议直接使用python来看requests.headers的信息
-        #或者是bp抓包
+
         res = session.get(url1, headers=headers_get1)
         
-
-        #print(res.headers)
-        #print(res.headers)
         lt_match = re.findall('<input type="hidden" id="lt" name="lt" value="(\S+)" />',res.text)
         execution_match = re.findall('<input type="hidden" name="execution" value="(\S+)" />',res.text)
         eventId_match = re.findall('<input type="hidden" name="_eventId" value="(\S+)" />',res.text)
         account_length = len(account)
         password_length = len(password)
-        #print(lt_match)
-        #省略一个参数然后重定向
-        #真正的X-auth=-token在最后的一个GET的请求上
-        lt = lt_match[0]    #正则匹配过来
+
+        lt = lt_match[0]    
         data = account+password+lt
-        rsa = execjs.compile(jscode).call('strEnc',data,'1','2','3')  #外部js扒过来
-        ul = account_length   #经测验是账号的长度
-        pl = password_length   #经测验是密码的长度
-        execution = execution_match[0] #正则匹配过来
-        eventId = eventId_match[0] #正则匹配过来
-        #print(rsa)
-        #print(data1)
+        rsa = execjs.compile(jscode).call('strEnc',data,'1','2','3') 
+        ul = account_length   
+        pl = password_length   
+        execution = execution_match[0] 
+        eventId = eventId_match[0] 
+
         data1 = {
             'rsa': rsa,
             'ul': ul,
@@ -80,12 +68,11 @@ class extra:
                 'Pragma': 'no-cache',
                 'Cache-Control': 'no-cache'
         }
-        #print(data1)
+        
         res1 = session.post(url1, data=data1,headers=headers1,allow_redirects=False) #这里没加allow_redirects属性，导致一直200
         #print(res1.history)
         total = res1.headers
         #关于requests的使用说明可以参考这个网址:https://docs.python-requests.org/zh_CN/latest/user/quickstart.html
-        #print(total)
         return total
 
     def working2(self,url_2):
