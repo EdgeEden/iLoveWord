@@ -5,4 +5,5 @@
 
 在第二处FIXME填入mode和week
 
-cas api为另一个版本，Crypto装不上的用这个
+##cas_api
+适配22级更新
