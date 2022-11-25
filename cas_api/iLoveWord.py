@@ -31,7 +31,8 @@ def getData(x_token, mode, week):
         'Sec-Fetch-Site': 'cross-site',
         # 获取当前uuid（测试发现是uuid1）
         'skl-ticket': str(uuid.uuid1()),
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; 22081212C Build/SKQ1.220303.001) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/95.0.4638.74 Mobile Safari/537.36',
         # 自己的token
         'X-Auth-Token': x_token
     }
@@ -55,9 +56,10 @@ def postData(answer, x_token):
         'Sec-Fetch-Mode': 'cors',
         'Sec-Fetch-Site': 'cross-site',
         'skl-ticket': str(uuid.uuid1()),
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0',
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 12; 22081212C Build/SKQ1.220303.001) AppleWebKit/537.36 '
+                      '(KHTML, like Gecko) Chrome/95.0.4638.74 Mobile Safari/537.36',
         'X-Auth-Token': x_token
-    }
+    }  # 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:98.0) Gecko/20100101 Firefox/98.0'
     requests.post(url, headers=postHeaders, data=answer)
 
 
@@ -78,9 +80,15 @@ def getAnswer(word, man):
         zhList = word['title'][:-3].split('，')
         for num in range(0, len(zhList)):
             transResult = ' '.join(translate(zhList[num]))
-            for option in optionList:
+            for option in optionList:  # 翻译题目匹配选项
                 if word[f'answer{option}'][:-3] in transResult:
-                    print(f"res:{option}")
+                    print(f"题目匹配 ans:{option}")
+                    return option
+            for option in optionList:  # 翻译选项匹配题目
+                print(f"{option}:", end='')
+                transResult = ' '.join(translate(word[f'answer{option}'][:-3]))
+                if zhList[num] in transResult:
+                    print(f"选项匹配 ans:{option}")
                     return option
         if man:  # 手动调整
             transResult = ' '.join(translate(zhList[0]))
@@ -89,11 +97,50 @@ def getAnswer(word, man):
         else:
             print("fuck up")
             return 'C'
-    else:
-        transResult = ' '.join(translate(word['title'][:-3]))
-        for option in optionList:
+    elif '(' in word['title']:  # 处理中文中的()
+        zhList = word['title'][:-3].split('(')
+        if bool(zhList):
+            transResult = ' '.join(translate(zhList[0]))
+            for option in optionList:  # 翻译题目匹配选项
+                if word[f'answer{option}'][:-3] in transResult:
+                    print(f"题目匹配 ans:{option}")
+                    return option
+            for option in optionList:  # 翻译选项匹配题目
+                print(f"{option}:", end='')
+                transResult = ' '.join(translate(word[f'answer{option}'][:-3]))
+                if zhList[0] in transResult:
+                    print(f"选项匹配 ans:{option}")
+                    return option
+            zhList = word['title'][:-3].split(')')
+        transResult = ' '.join(translate(zhList[1]))
+        for option in optionList:  # 翻译题目匹配选项
             if word[f'answer{option}'][:-3] in transResult:
-                print(f"res:{option}")
+                print(f"题目匹配 ans:{option}")
+                return option
+        for option in optionList:  # 翻译选项匹配题目
+            print(f"{option}:", end='')
+            transResult = ' '.join(translate(word[f'answer{option}'][:-3]))
+            if zhList[1] in transResult:
+                print(f"选项匹配 ans:{option}")
+                return option
+        if man:  # 手动调整
+            transResult = ' '.join(translate(word['title'][:-3]))
+            return fail(word['title'][:-3], word['answerA'], word['answerB'],
+                        word['answerC'], word['answerD'], transResult)
+        else:
+            print("fuck up")
+            return 'C'
+    else:  # TODO:处理省略号
+        transResult = ' '.join(translate(word['title'][:-3]))
+        for option in optionList:  # 翻译题目匹配选项
+            if word[f'answer{option}'][:-3] in transResult:
+                print(f"题目匹配 ans:{option}")
+                return option
+        for option in optionList:  # 翻译选项匹配题目
+            print(f"{option}:", end='')
+            transResult = ' '.join(translate(word[f'answer{option}'][:-3]))
+            if word['title'][:-3] in transResult:
+                print(f"选项匹配 ans:{option}")
                 return option
         if man:  # 手动调整
             transResult = ' '.join(translate(word['title'][:-3]))
@@ -111,7 +158,7 @@ def answerPaper(X_Auth_Token, mode, week):
     paper = getData(X_Auth_Token, mode, week)  # mode=0为自测,1为考试。week参数为第几周。
     print("极速模式：全自动，准确率较低(约为80%)")
     print("精确模式：程序不确定时会询问你的意见，准确率较高")
-    manu = input("请输入模式-极速模式(0)/精确模式(1):")
+    manu = bool(int(input("请输入模式-极速模式(0)/精确模式(1):")))
     pprint.pprint(paper)
     answerDic['paperId'] = paper['paperId']
     print('********正在答题中********')
